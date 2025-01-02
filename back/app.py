@@ -14,6 +14,9 @@ from openai import AsyncOpenAI
 
 load_dotenv()
 
+
+vector_store = None
+
 # upstage models
 chat_upstage = ChatUpstage()
 embedding_upstage = UpstageEmbeddings(model="embedding-query")
@@ -79,9 +82,38 @@ async def chat_endpoint(req: MessageRequest):
 
 openai = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
+async def create_vector_store():
+    print("Creating vector store...")
+    vector_store = await openai.beta.vector_stores.create(name="tourism sites")
+
+        # Ready the files for upload to OpenAI
+    file_paths = ["./서울시 관광 문화.json", "./서울시 관광 쇼핑.json", "./서울시 관광 음식.json", "./서울시 관광 자연.json", "./서울시 관광거리 정보 (한국어).json"]
+    file_streams = [open(path, "rb") for path in file_paths]
+    print("Uploading files...")
+
+    # Use the upload and poll SDK helper to upload the files, add them to the vector store,
+    # and poll the status of the file batch for completion.
+    file_batch = await openai.beta.vector_stores.file_batches.upload_and_poll(
+        vector_store_id=vector_store.id, 
+        files=file_streams
+    )
+    print("File batch uploaded successfully")
+
+    # You can print the status and the file counts of the batch to see the result of this operation.
+    print(file_batch.status)
+    print(file_batch.file_counts)
+
+
+
+
 @app.post("/assistant")
 async def assistant_endpoint(req: AssistantRequest):
+    
     assistant = await openai.beta.assistants.retrieve("asst_RlG0py1ewx9wJnpONKJIijW5")
+
+    assistant = await openai.beta.assistants.update(
+        assistant_id=assistant.id,
+        tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},)
 
     if req.thread_id:
         # We have an existing thread, append user message
@@ -121,6 +153,8 @@ async def health_check():
 
 
 if __name__ == "__main__":
+    create_vector_store()
+
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
