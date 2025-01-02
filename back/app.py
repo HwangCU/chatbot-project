@@ -11,8 +11,21 @@ from langchain_upstage import UpstageEmbeddings
 from pinecone import Pinecone, ServerlessSpec
 from pydantic import BaseModel
 from openai import AsyncOpenAI
+from serpapi import GoogleSearch
 
 load_dotenv()
+
+os.environ["SERPAPI_API_KEY"] = os.environ.get("SERPAPI_API_KEY")
+
+def search_web(questions):
+    params = {
+        "engine": "google",
+        "q": questions,
+        "num": "4"
+    }
+
+    return GoogleSearch(params).get_dict()
+
 
 # upstage models
 chat_upstage = ChatUpstage()
@@ -79,20 +92,38 @@ async def chat_endpoint(req: MessageRequest):
 
 openai = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
+
 @app.post("/assistant")
 async def assistant_endpoint(req: AssistantRequest):
-    assistant = await openai.beta.assistants.retrieve("asst_RlG0py1ewx9wJnpONKJIijW5")
+    # 웹 검색 수행
+    search_results = search_web(req.message)
+    
+    # 검색 결과에서 relevant snippets 추출
+    snippets = []
+    if "organic_results" in search_results:
+        for result in search_results["organic_results"][:3]:  # 상위 3개 결과만
+            if "snippet" in result:
+                snippets.append(result["snippet"])
+    
+    # 검색 결과를 포함한 향상된 프롬프트 생성
+    enhanced_message = f"""질문: {req.message}
+웹 검색 결과:
+{' '.join(snippets)}
+
+위의 웹 검색 결과를 참고하여 답변해 주세요."""
+ 
+    assistant = await openai.beta.assistants.retrieve("asst_wTYWx8UcDs2QRG06kX6utDZV")
 
     if req.thread_id:
         # We have an existing thread, append user message
         await openai.beta.threads.messages.create(
-            thread_id=req.thread_id, role="user", content=req.message
+            thread_id=req.thread_id, role="user", content=enhanced_message
         )
         thread_id = req.thread_id
     else:
         # Create a new thread with user message
         thread = await openai.beta.threads.create(
-            messages=[{"role": "user", "content": req.message}]
+            messages=[{"role": "user", "content": enhanced_message}]
         )
         thread_id = thread.id
 
