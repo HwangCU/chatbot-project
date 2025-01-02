@@ -38,7 +38,7 @@ function createLoadingMessage() {
     "max-w-full",
     "p-3",
     "rounded-lg",
-    "whitespace-pre-wrap",
+    // "whitespace-pre-wrap",
     "leading-relaxed",
     "shadow-sm",
     "bg-gray-200",
@@ -101,7 +101,7 @@ function createMessageBubble(content, sender = "user") {
     "md:max-w-2xl",
     "p-3",
     "rounded-lg",
-    "whitespace-pre-wrap",
+    // "whitespace-pre-wrap",
     "leading-relaxed",
     "shadow-sm"
   );
