@@ -10,6 +10,7 @@ from langchain_upstage import ChatUpstage
 from langchain_upstage import UpstageEmbeddings
 from pinecone import Pinecone, ServerlessSpec
 from pydantic import BaseModel
+from openai import AsyncOpenAI
 
 load_dotenv()
 
@@ -76,40 +77,41 @@ async def chat_endpoint(req: MessageRequest):
     result = qa(req.message)
     return {"reply": result['result']}
 
+openai = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-# @app.post("/assistant")
-# async def assistant_endpoint(req: AssistantRequest):
-#     assistant = await openai.beta.assistants.retrieve("asst_tc4AhtsAjNJnRtpJmy1gjJOE")
-#
-#     if req.thread_id:
-#         # We have an existing thread, append user message
-#         await openai.beta.threads.messages.create(
-#             thread_id=req.thread_id, role="user", content=req.message
-#         )
-#         thread_id = req.thread_id
-#     else:
-#         # Create a new thread with user message
-#         thread = await openai.beta.threads.create(
-#             messages=[{"role": "user", "content": req.message}]
-#         )
-#         thread_id = thread.id
-#
-#     # Run and wait until complete
-#     await openai.beta.threads.runs.create_and_poll(
-#         thread_id=thread_id, assistant_id=assistant.id
-#     )
-#
-#     # Now retrieve messages for this thread
-#     # messages.list returns an async iterator, so let's gather them into a list
-#     all_messages = [
-#         m async for m in openai.beta.threads.messages.list(thread_id=thread_id)
-#     ]
-#     print(all_messages)
-#
-#     # The assistant's reply should be the last message with role=assistant
-#     assistant_reply = all_messages[0].content[0].text.value
-#
-#     return {"reply": assistant_reply, "thread_id": thread_id}
+@app.post("/assistant")
+async def assistant_endpoint(req: AssistantRequest):
+    assistant = await openai.beta.assistants.retrieve("asst_RlG0py1ewx9wJnpONKJIijW5")
+
+    if req.thread_id:
+        # We have an existing thread, append user message
+        await openai.beta.threads.messages.create(
+            thread_id=req.thread_id, role="user", content=req.message
+        )
+        thread_id = req.thread_id
+    else:
+        # Create a new thread with user message
+        thread = await openai.beta.threads.create(
+            messages=[{"role": "user", "content": req.message}]
+        )
+        thread_id = thread.id
+
+    # Run and wait until complete
+    await openai.beta.threads.runs.create_and_poll(
+        thread_id=thread_id, assistant_id=assistant.id
+    )
+
+    # Now retrieve messages for this thread
+    # messages.list returns an async iterator, so let's gather them into a list
+    all_messages = [
+        m async for m in openai.beta.threads.messages.list(thread_id=thread_id)
+    ]
+    print(all_messages)
+
+    # The assistant's reply should be the last message with role=assistant
+    assistant_reply = all_messages[0].content[0].text.value
+
+    return {"reply": assistant_reply, "thread_id": thread_id}
 
 
 @app.get("/health")
