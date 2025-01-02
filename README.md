@@ -9,7 +9,7 @@
 2. 답을 얻은 후, 추가적인 정보를 제공하여 더욱 자세한 일정을 계획합니다.
 
 ## 배포된 링크
-[TripChat 바로가기](tripchat.vercel.app)
+[TripChat 바로가기](https://tripchat.vercel.app/)
 
 ## 로컬 실행 방법
 1. (선택) 가상환경 설정
