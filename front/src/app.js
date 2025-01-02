@@ -38,7 +38,7 @@ function createLoadingMessage() {
     "max-w-full",
     "p-3",
     "rounded-lg",
-    // "whitespace-pre-wrap",
+    "whitespace-pre-wrap",
     "leading-relaxed",
     "shadow-sm",
     "bg-gray-200",
@@ -101,18 +101,18 @@ function createMessageBubble(content, sender = "user") {
     "md:max-w-2xl",
     "p-3",
     "rounded-lg",
-    // "whitespace-pre-wrap",
+    "whitespace-pre-wrap",
     "leading-relaxed",
     "shadow-sm"
   );
 
   if (sender === "assistant") {
     bubble.classList.add("bg-gray-200", "text-gray-900");
-    bubble.innerHTML = marked.parse(content);
   } else {
     bubble.classList.add("bg-blue-600", "text-white");
-    bubble.textContent = content;
   }
+
+  bubble.textContent = content;
 
   wrapper.appendChild(avatar);
   wrapper.appendChild(bubble);
