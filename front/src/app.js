@@ -10,8 +10,12 @@ const BASE_URL = process.env.API_ENDPOINT;
 
 function createMessageBubble(content, sender = "user") {
   const wrapper = document.createElement("div");
-  wrapper.classList.add("mb-6", "flex", "items-start", "space-x-3");
+  wrapper.classList.add("mb-6", "flex", "items-center", "gap-3");
 
+  if (sender === "user") {
+    wrapper.classList.add("flex-row-reverse")
+  }
+  
   const avatar = document.createElement("div");
   avatar.classList.add(
     "w-10",
@@ -26,10 +30,10 @@ function createMessageBubble(content, sender = "user") {
   );
 
   if (sender === "assistant") {
-    avatar.classList.add("bg-gradient-to-br", "from-green-400", "to-green-600");
-    avatar.textContent = "A";
+    avatar.classList.add("bg-gradient-to-br", "from-lime-400", "to-green-600");
+    avatar.textContent = "😊";
   } else {
-    avatar.classList.add("bg-gradient-to-br", "from-blue-500", "to-blue-700");
+    avatar.classList.add("bg-gradient-to-br", "from-sky-500", "to-blue-600");
     avatar.textContent = "U";
   }
 
