@@ -108,11 +108,11 @@ function createMessageBubble(content, sender = "user") {
 
   if (sender === "assistant") {
     bubble.classList.add("bg-gray-200", "text-gray-900");
+    bubble.innerHTML = marked.parse(content);
   } else {
     bubble.classList.add("bg-blue-600", "text-white");
+    bubble.textContent = content;
   }
-
-  bubble.textContent = content;
 
   wrapper.appendChild(avatar);
   wrapper.appendChild(bubble);
@@ -157,7 +157,7 @@ async function getAssistantResponse(userMessage) {
   }
  }
  
- messageForm.addEventListener("submit", async (e) => {
+messageForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (isLoading) return;
  
