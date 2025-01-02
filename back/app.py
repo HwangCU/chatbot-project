@@ -114,6 +114,10 @@ async def assistant_endpoint(req: AssistantRequest):
  
     assistant = await openai.beta.assistants.retrieve("asst_wTYWx8UcDs2QRG06kX6utDZV")
 
+    assistant = await openai.beta.assistants.update(
+        assistant_id=assistant.id,
+        tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},)
+
     if req.thread_id:
         # We have an existing thread, append user message
         await openai.beta.threads.messages.create(
@@ -152,6 +156,8 @@ async def health_check():
 
 
 if __name__ == "__main__":
+    create_vector_store()
+
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
